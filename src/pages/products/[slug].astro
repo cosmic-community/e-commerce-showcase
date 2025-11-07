@@ -1,0 +1,161 @@
+---
+// src/pages/products/[slug].astro
+import Layout from '@/layouts/Layout.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import ReviewCard from '@/components/ReviewCard.astro'
+import { getProducts, getProductBySlug, getProductReviews } from '@/lib/cosmic'
+import type { Product, Review } from '@/types'
+
+export async function getStaticPaths() {
+  const products = await getProducts() as Product[]
+  
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product }
+  }))
+}
+
+const { slug } = Astro.params
+const product = await getProductBySlug(slug) as Product | null
+
+if (!product) {
+  return Astro.redirect('/products')
+}
+
+const reviews = await getProductReviews(product.id) as Review[]
+
+const firstImage = product.metadata.product_images?.[0]
+const imageUrl = firstImage?.imgix_url || product.thumbnail
+const mainImageUrl = imageUrl ? `${imageUrl}?w=1200&h=900&fit=crop&auto=format,compress` : ''
+
+// Calculate average rating
+const averageRating = reviews.length > 0
+  ? reviews.reduce((sum, review) => sum + parseInt(review.metadata.rating.key), 0) / reviews.length
+  : 0
+---
+
+<Layout 
+  title={`${product.title} - E-Commerce Showcase`}
+  description={product.metadata.description.replace(/<[^>]*>/g, '').substring(0, 160)}
+>
+  <Header />
+  
+  <main class="py-16">
+    <div class="container-custom">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <!-- Product Images -->
+        <div>
+          {mainImageUrl && (
+            <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-4">
+              <img
+                src={mainImageUrl}
+                alt={product.title}
+                class="w-full h-full object-cover"
+                width="600"
+                height="450"
+              />
+            </div>
+          )}
+          
+          {product.metadata.product_images && product.metadata.product_images.length > 1 && (
+            <div class="grid grid-cols-4 gap-4">
+              {product.metadata.product_images.map((image, index) => (
+                <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <img
+                    src={`${image.imgix_url}?w=400&h=400&fit=crop&auto=format,compress`}
+                    alt={`${product.title} - Image ${index + 1}`}
+                    class="w-full h-full object-cover"
+                    width="200"
+                    height="200"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <!-- Product Info -->
+        <div>
+          {product.metadata.collection && (
+            <a 
+              href={`/collections/${product.metadata.collection.slug}`}
+              class="text-primary hover:text-primary-dark font-medium mb-2 inline-block"
+            >
+              {product.metadata.collection.title}
+            </a>
+          )}
+          
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            {product.title}
+          </h1>
+          
+          {reviews.length > 0 && (
+            <div class="flex items-center gap-2 mb-6">
+              <div class="flex">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <svg
+                    key={i}
+                    class={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                ))}
+              </div>
+              <span class="text-gray-600">
+                ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+              </span>
+            </div>
+          )}
+          
+          <div class="text-4xl font-bold text-primary mb-6">
+            ${product.metadata.price.toFixed(2)}
+          </div>
+          
+          <div class="prose prose-lg max-w-none mb-8" set:html={product.metadata.description} />
+          
+          <div class="border-t border-gray-200 pt-6 space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">SKU:</span>
+              <span class="font-medium">{product.metadata.sku}</span>
+            </div>
+            
+            <div class="flex justify-between">
+              <span class="text-gray-600">Availability:</span>
+              {product.metadata.stock_quantity > 0 ? (
+                <span class="font-medium text-green-600">
+                  In Stock ({product.metadata.stock_quantity} available)
+                </span>
+              ) : (
+                <span class="font-medium text-red-600">Out of Stock</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reviews Section -->
+      {reviews.length > 0 && (
+        <section>
+          <h2 class="text-3xl font-bold text-gray-900 mb-8">
+            Customer Reviews
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {reviews.map((review) => (
+              <ReviewCard review={review} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>

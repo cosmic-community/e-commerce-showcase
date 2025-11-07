@@ -1,0 +1,47 @@
+---
+// src/pages/collections/index.astro
+import Layout from '@/layouts/Layout.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import CollectionCard from '@/components/CollectionCard.astro'
+import { getCollections } from '@/lib/cosmic'
+import type { Collection } from '@/types'
+
+const collections = await getCollections() as Collection[]
+---
+
+<Layout 
+  title="Collections - E-Commerce Showcase"
+  description="Browse our product collections and find what you're looking for"
+>
+  <Header />
+  
+  <main class="py-16">
+    <div class="container-custom">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          Our Collections
+        </h1>
+        <p class="text-xl text-gray-600">
+          Browse products by category
+        </p>
+      </div>
+      
+      {collections.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {collections.map((collection) => (
+            <CollectionCard collection={collection} />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12">
+          <p class="text-gray-600 text-lg">
+            No collections available at this time.
+          </p>
+        </div>
+      )}
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>

@@ -1,0 +1,62 @@
+---
+// src/components/ProductCard.astro
+import type { Product } from '@/types'
+
+export interface Props {
+  product: Product
+}
+
+const { product } = Astro.props
+
+const firstImage = product.metadata.product_images?.[0]
+const imageUrl = firstImage?.imgix_url || product.thumbnail
+const optimizedImageUrl = imageUrl ? `${imageUrl}?w=800&h=600&fit=crop&auto=format,compress` : ''
+---
+
+<article class="card group">
+  <a href={`/products/${product.slug}`} class="block">
+    {optimizedImageUrl && (
+      <div class="aspect-[4/3] overflow-hidden bg-gray-100">
+        <img
+          src={optimizedImageUrl}
+          alt={product.title}
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          width="400"
+          height="300"
+        />
+      </div>
+    )}
+    
+    <div class="p-6">
+      <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-primary">
+        {product.title}
+      </h3>
+      
+      {product.metadata.collection && (
+        <p class="text-sm text-gray-600 mb-3">
+          {product.metadata.collection.title}
+        </p>
+      )}
+      
+      <div class="flex items-center justify-between">
+        <span class="text-2xl font-bold text-primary">
+          ${product.metadata.price.toFixed(2)}
+        </span>
+        
+        <span class="text-sm text-gray-600">
+          SKU: {product.metadata.sku}
+        </span>
+      </div>
+      
+      {product.metadata.stock_quantity > 0 ? (
+        <p class="text-sm text-green-600 mt-2">
+          In Stock ({product.metadata.stock_quantity} available)
+        </p>
+      ) : (
+        <p class="text-sm text-red-600 mt-2">
+          Out of Stock
+        </p>
+      )}
+    </div>
+  </a>
+</article>

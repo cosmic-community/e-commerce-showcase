@@ -1,0 +1,107 @@
+---
+// src/pages/index.astro
+import Layout from '@/layouts/Layout.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import ProductCard from '@/components/ProductCard.astro'
+import CollectionCard from '@/components/CollectionCard.astro'
+import { getProducts, getCollections } from '@/lib/cosmic'
+import type { Product, Collection } from '@/types'
+
+const products = await getProducts() as Product[]
+const collections = await getCollections() as Collection[]
+
+// Get featured products (first 6)
+const featuredProducts = products.slice(0, 6)
+---
+
+<Layout title="E-Commerce Showcase - Modern Product Catalog">
+  <Header />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-primary to-primary-dark text-white py-20">
+      <div class="container-custom text-center">
+        <h1 class="text-5xl font-bold mb-6">
+          Welcome to Our Store
+        </h1>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          Discover amazing products across our curated collections. Quality, style, and value in every item.
+        </p>
+        <div class="flex gap-4 justify-center">
+          <a href="/products" class="bg-white text-primary hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg transition-colors duration-200">
+            Shop Now
+          </a>
+          <a href="/collections" class="border-2 border-white text-white hover:bg-white hover:text-primary font-semibold py-3 px-8 rounded-lg transition-colors duration-200">
+            View Collections
+          </a>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Collections Section -->
+    {collections.length > 0 && (
+      <section class="py-16 bg-gray-50">
+        <div class="container-custom">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+              Browse by Collection
+            </h2>
+            <p class="text-xl text-gray-600">
+              Explore our carefully curated product categories
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {collections.map((collection) => (
+              <CollectionCard collection={collection} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+    
+    <!-- Featured Products Section -->
+    {featuredProducts.length > 0 && (
+      <section class="py-16">
+        <div class="container-custom">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
+            <p class="text-xl text-gray-600">
+              Check out our most popular items
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProducts.map((product) => (
+              <ProductCard product={product} />
+            ))}
+          </div>
+          
+          <div class="text-center mt-12">
+            <a href="/products" class="btn-primary text-lg py-3 px-8 inline-block">
+              View All Products
+            </a>
+          </div>
+        </div>
+      </section>
+    )}
+    
+    {products.length === 0 && collections.length === 0 && (
+      <section class="py-16">
+        <div class="container-custom text-center">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">
+            No Products Available
+          </h2>
+          <p class="text-gray-600">
+            Products will appear here once they are added to your Cosmic bucket.
+          </p>
+        </div>
+      </section>
+    )}
+  </main>
+  
+  <Footer />
+</Layout>

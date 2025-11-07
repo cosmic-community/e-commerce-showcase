@@ -1,0 +1,41 @@
+---
+// src/components/CollectionCard.astro
+import type { Collection } from '@/types'
+
+export interface Props {
+  collection: Collection
+}
+
+const { collection } = Astro.props
+
+const imageUrl = collection.metadata.featured_image?.imgix_url || collection.thumbnail
+const optimizedImageUrl = imageUrl ? `${imageUrl}?w=800&h=500&fit=crop&auto=format,compress` : ''
+---
+
+<article class="card group">
+  <a href={`/collections/${collection.slug}`} class="block">
+    {optimizedImageUrl && (
+      <div class="aspect-[16/10] overflow-hidden bg-gray-100">
+        <img
+          src={optimizedImageUrl}
+          alt={collection.title}
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          width="400"
+          height="250"
+        />
+      </div>
+    )}
+    
+    <div class="p-6">
+      <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-primary">
+        {collection.metadata.collection_name}
+      </h3>
+      
+      {collection.metadata.description && (
+        <p class="text-gray-600 line-clamp-2">
+          {collection.metadata.description}
+        </p>
+      )}
+    </div>
+  </a>
+</article>

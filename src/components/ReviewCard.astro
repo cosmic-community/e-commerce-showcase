@@ -1,0 +1,49 @@
+---
+// src/components/ReviewCard.astro
+import type { Review } from '@/types'
+
+export interface Props {
+  review: Review
+}
+
+const { review } = Astro.props
+
+const ratingNumber = parseInt(review.metadata.rating.key)
+const renderStars = (rating: number) => {
+  return Array.from({ length: 5 }, (_, index) => {
+    const filled = index < rating
+    return { filled, index }
+  })
+}
+---
+
+<div class="card p-6">
+  <div class="flex items-start justify-between mb-4">
+    <div>
+      <h4 class="font-semibold text-gray-900">{review.metadata.customer_name}</h4>
+      <div class="flex items-center mt-1">
+        {renderStars(ratingNumber).map(({ filled, index }) => (
+          <svg
+            key={index}
+            class={`w-5 h-5 ${filled ? 'text-yellow-400' : 'text-gray-300'}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        ))}
+      </div>
+    </div>
+    <span class="text-sm text-gray-500">{review.metadata.rating.value}</span>
+  </div>
+  
+  <h3 class="text-lg font-semibold text-gray-900 mb-2">{review.title}</h3>
+  
+  <p class="text-gray-700 leading-relaxed">
+    {review.metadata.review_text}
+  </p>
+</div>
